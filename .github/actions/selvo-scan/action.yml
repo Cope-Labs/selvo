@@ -1,0 +1,197 @@
+name: selvo Security Scan
+description: >
+  Run selvo against a Linux package ecosystem and post a risk summary as a PR comment.
+  Fails CI if any KEV-listed CVE, weaponized exploit, or score above threshold is found.
+
+inputs:
+  ecosystem:
+    description: "Package ecosystem to scan (debian, ubuntu, fedora, arch, alpine, nixos, all)"
+    required: false
+    default: "debian"
+  limit:
+    description: "Maximum number of packages to analyse"
+    required: false
+    default: "50"
+  fail-on-kev:
+    description: "Exit non-zero if any package is in CISA KEV"
+    required: false
+    default: "true"
+  fail-on-weaponized:
+    description: "Exit non-zero if any package has weaponized exploit"
+    required: false
+    default: "true"
+  min-score:
+    description: "Exit non-zero if any package score exceeds this value (0 = disabled)"
+    required: false
+    default: "0"
+  post-comment:
+    description: "Post a PR comment with the risk table (requires GITHUB_TOKEN)"
+    required: false
+    default: "true"
+  format:
+    description: "Output format: table | json | markdown"
+    required: false
+    default: "table"
+  sbom:
+    description: "Path to a CycloneDX or SPDX SBOM file to use as input instead of ecosystem scraping"
+    required: false
+    default: ""
+  grype-report:
+    description: "Path to a Grype JSON scan report"
+    required: false
+    default: ""
+  trivy-report:
+    description: "Path to a Trivy JSON scan report"
+    required: false
+    default: ""
+
+outputs:
+  kev-count:
+    description: "Number of packages with CISA KEV CVEs"
+    value: ${{ steps.scan.outputs.kev-count }}
+  weaponized-count:
+    description: "Number of packages with weaponized exploits"
+    value: ${{ steps.scan.outputs.weaponized-count }}
+  report-path:
+    description: "Path to the generated report file"
+    value: ${{ steps.scan.outputs.report-path }}
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install selvo
+      shell: bash
+      run: pip install --quiet selvo
+
+    - name: Run selvo scan
+      id: scan
+      shell: bash
+      env:
+        OPENROUTER_API_KEY: ${{ env.OPENROUTER_API_KEY }}
+        GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+
+        ARGS=""
+        REPORT_PATH="${RUNNER_TEMP}/selvo-report.json"
+
+        if [[ -n "${{ inputs.sbom }}" ]]; then
+          ARGS="$ARGS --sbom ${{ inputs.sbom }}"
+        elif [[ -n "${{ inputs.grype-report }}" ]]; then
+          ARGS="$ARGS --grype ${{ inputs.grype-report }}"
+        elif [[ -n "${{ inputs.trivy-report }}" ]]; then
+          ARGS="$ARGS --trivy ${{ inputs.trivy-report }}"
+        else
+          ARGS="$ARGS --ecosystem ${{ inputs.ecosystem }} --limit ${{ inputs.limit }}"
+        fi
+
+        # Run analysis and capture JSON output
+        selvo analyze $ARGS --format json --output "$REPORT_PATH" || true
+
+        # Run scan and capture counts for gate outputs
+        touch "$REPORT_PATH"
+        KEV_COUNT=$(python - <<'PYEOF'
+        import json, sys
+        data = json.load(open("$REPORT_PATH")) if open("$REPORT_PATH").read(5) else {"packages": []}
+        pkgs = data.get("packages", [])
+        print(sum(1 for p in pkgs if p.get("in_cisa_kev")))
+        PYEOF
+        )
+        WPZN_COUNT=$(python - <<'PYEOF'
+        import json, sys
+        data = json.load(open("$REPORT_PATH")) if open("$REPORT_PATH").read(5) else {"packages": []}
+        pkgs = data.get("packages", [])
+        print(sum(1 for p in pkgs if p.get("exploit_maturity") == "weaponized"))
+        PYEOF
+        )
+
+        echo "kev-count=$KEV_COUNT" >> "$GITHUB_OUTPUT"
+        echo "weaponized-count=$WPZN_COUNT" >> "$GITHUB_OUTPUT"
+        echo "report-path=$REPORT_PATH" >> "$GITHUB_OUTPUT"
+
+    - name: Display risk table
+      shell: bash
+      run: |
+        if [[ -n "${{ inputs.sbom }}" ]]; then
+          SCAN_ARG="--sbom ${{ inputs.sbom }}"
+        elif [[ -n "${{ inputs.grype-report }}" ]]; then
+          SCAN_ARG="--grype ${{ inputs.grype-report }}"
+        elif [[ -n "${{ inputs.trivy-report }}" ]]; then
+          SCAN_ARG="--trivy ${{ inputs.trivy-report }}"
+        else
+          SCAN_ARG="--ecosystem ${{ inputs.ecosystem }} --limit ${{ inputs.limit }}"
+        fi
+        selvo analyze $SCAN_ARG --format ${{ inputs.format }} || true
+
+    - name: Post PR comment
+      if: ${{ inputs.post-comment == 'true' && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const reportPath = '${{ steps.scan.outputs.report-path }}';
+          let body = '## selvo Security Scan Results\n\n';
+
+          try {
+            const data = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+            const pkgs = (data.packages || []).slice(0, 20);
+            const kev = data.kev_count || 0;
+            const wpzn = data.weaponized_count || 0;
+
+            if (kev > 0) body += `> ⚠️ **${kev} package(s) in CISA KEV list**\n`;
+            if (wpzn > 0) body += `> 🔴 **${wpzn} package(s) have weaponized exploits**\n`;
+            body += '\n';
+
+            if (pkgs.length > 0) {
+              body += '| Package | Version | CVSS | EPSS | Score | Flags |\n';
+              body += '|---------|---------|------|------|-------|---------|\n';
+              for (const p of pkgs) {
+                const flags = [
+                  p.in_cisa_kev ? '🔑KEV' : '',
+                  p.exploit_maturity === 'weaponized' ? '💣' : p.exploit_maturity === 'poc' ? '🔬' : '',
+                  p.ossfuzz_covered ? '🛡️OSS-Fuzz' : '',
+                ].filter(Boolean).join(' ');
+                body += `| \`${p.name}\` | ${p.version} | ${(p.max_cvss||0).toFixed(1)} | ${((p.max_epss||0)*100).toFixed(1)}% | ${(p.score||0).toFixed(1)} | ${flags} |\n`;
+              }
+            } else {
+              body += '_No packages with CVEs found._\n';
+            }
+          } catch (e) {
+            body += `_Could not load report: ${e.message}_\n`;
+          }
+
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body,
+          });
+
+    - name: Enforce security gates
+      shell: bash
+      run: |
+        EXIT=0
+        KEV="${{ steps.scan.outputs.kev-count }}"
+        WPZN="${{ steps.scan.outputs.weaponized-count }}"
+
+        if [[ "${{ inputs.fail-on-kev }}" == "true" && "${KEV:-0}" -gt 0 ]]; then
+          echo "::error::selvo: ${KEV} package(s) listed in CISA KEV — failing build."
+          EXIT=1
+        fi
+
+        if [[ "${{ inputs.fail-on-weaponized }}" == "true" && "${WPZN:-0}" -gt 0 ]]; then
+          echo "::error::selvo: ${WPZN} package(s) have weaponized exploits — failing build."
+          EXIT=1
+        fi
+
+        exit $EXIT
+
+branding:
+  icon: shield
+  color: red

@@ -1,0 +1,45 @@
+name: Daily Analysis
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC = 01:00 CST daily
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  run-pipeline:
+    name: Trigger pipeline on fly.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: POST /api/v1/analyze (debian, limit 100)
+        env:
+          SELVO_ANALYZE_KEY: ${{ secrets.SELVO_ANALYZE_KEY }}
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            https://selvo.dev/api/v1/analyze \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: $SELVO_ANALYZE_KEY" \
+            -d '{"ecosystem":"debian","limit":100}')
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n 1)
+          echo "HTTP $code"
+          echo "$body"
+          [ "$code" = "202" ] || exit 1
+
+      - name: POST /api/v1/analyze (fedora, limit 100)
+        env:
+          SELVO_ANALYZE_KEY: ${{ secrets.SELVO_ANALYZE_KEY }}
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            https://selvo.dev/api/v1/analyze \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: $SELVO_ANALYZE_KEY" \
+            -d '{"ecosystem":"fedora","limit":100}')
+          body=$(echo "$response" | head -n -1)
+          code=$(echo "$response" | tail -n 1)
+          echo "HTTP $code"
+          echo "$body"
+          [ "$code" = "202" ] || exit 1

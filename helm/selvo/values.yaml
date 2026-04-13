@@ -1,0 +1,175 @@
+# Default values for selvo Helm chart.
+# Override with: helm install selvo ./helm/selvo -f my-values.yaml
+
+# -- Number of selvo-api replicas.
+replicaCount: 1
+
+image:
+  # -- Container image repository.
+  repository: ghcr.io/cope-labs/selvo
+  # -- Image pull policy.
+  pullPolicy: IfNotPresent
+  # -- Image tag (defaults to chart appVersion).
+  tag: ""
+
+# -- Image pull secrets.
+imagePullSecrets: []
+
+# -- Override the chart name.
+nameOverride: ""
+# -- Override the full release name.
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount.
+  create: true
+  # -- Annotations for the ServiceAccount.
+  annotations: {}
+  # -- ServiceAccount name override.
+  name: ""
+
+# -- Pod annotations.
+podAnnotations: {}
+
+# -- Pod security context.
+podSecurityContext:
+  fsGroup: 1000
+
+# -- Container security context.
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  # -- Service type.
+  type: ClusterIP
+  # -- Service port.
+  port: 8765
+
+ingress:
+  # -- Enable Ingress.
+  enabled: false
+  # -- Ingress class name (e.g. nginx, traefik, alb).
+  className: ""
+  # -- Ingress annotations.
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # -- Ingress hosts.
+  hosts:
+    - host: selvo.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- TLS configuration.
+  tls: []
+  # - secretName: selvo-tls
+  #   hosts:
+  #     - selvo.example.com
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: "2"
+    memory: 1Gi
+
+# -- Horizontal Pod Autoscaler.
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+persistence:
+  # -- Enable PersistentVolumeClaim for the selvo SQLite cache.
+  enabled: true
+  # -- Storage class name. Leave empty for default.
+  storageClassName: ""
+  # -- Storage size.
+  size: 5Gi
+  # -- Mount path inside the container.
+  mountPath: /root/.cache/selvo
+  # -- Access mode.
+  accessMode: ReadWriteOnce
+
+# -- Node selector.
+nodeSelector: {}
+
+# -- Tolerations.
+tolerations: []
+
+# -- Affinity rules.
+affinity: {}
+
+# --------------------------------------------------------------------------
+# selvo configuration
+# --------------------------------------------------------------------------
+
+selvo:
+  # -- Enable API-key authentication middleware (SELVO_API_AUTH).
+  # Set to "1" to require X-API-Key on all non-public endpoints.
+  apiAuth: ""
+
+  # -- Dashboard org ID (SELVO_DASH_ORG).
+  dashOrg: "default"
+
+  # -- Stripe webhook secret (STRIPE_WEBHOOK_SECRET).
+  stripeWebhookSecret: ""
+
+  # -- Stripe secret key (STRIPE_SECRET_KEY).
+  stripeSecretKey: ""
+
+  # -- GitHub token for higher API rate limits (GITHUB_TOKEN).
+  githubToken: ""
+
+  # -- NVD API key for CVSS enrichment (NVD_API_KEY).
+  nvdApiKey: ""
+
+  # -- OpenAI key for LLM features (OPENAI_API_KEY).
+  openaiApiKey: ""
+
+  # -- Default ecosystem for scheduled analyses.
+  # Uncomment to enable a CronJob that runs selvo analyze on a schedule.
+  # scheduledAnalysis:
+  #   enabled: false
+  #   schedule: "0 2 * * *"   # 02:00 UTC daily
+  #   ecosystem: all
+  #   limit: 50
+
+# -- Extra environment variables for the selvo-api container.
+extraEnv: []
+# - name: MY_VAR
+#   value: "my-value"
+
+# -- Extra environment variables sourced from a Secret.
+extraEnvFrom: []
+# - secretRef:
+#     name: my-secret
+
+# -- Liveness probe configuration.
+livenessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# -- Readiness probe configuration.
+readinessProbe:
+  httpGet:
+    path: /api/v1/status
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3

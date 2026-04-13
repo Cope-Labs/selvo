@@ -1,0 +1,73 @@
+# Keeps pinned dependencies current without blowing up on every minor bump.
+#
+# Supply-chain posture: we pin GitHub Actions to commit SHAs with a # version
+# comment. Dependabot understands this pattern and will propose both a new
+# SHA and a new comment in the same PR.
+#
+# Pip is tracked against pyproject.toml. Tests and the API extra are both
+# checked so any transitive CVE in fastapi/uvicorn/httpx gets a PR.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/Chicago
+    groups:
+      # Roll all Docker-org actions into one PR — they tend to ship together.
+      docker-actions:
+        patterns:
+          - "docker/*"
+      # Same for GitHub-owned actions. Reduces PR noise.
+      github-actions:
+        patterns:
+          - "actions/*"
+    commit-message:
+      prefix: "ci(deps)"
+    labels:
+      - "dependencies"
+      - "ci"
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: America/Chicago
+    groups:
+      # Group minor/patch bumps; major bumps still get their own PR.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "deps"
+    labels:
+      - "dependencies"
+      - "python"
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci(docker)"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  - package-ecosystem: npm
+    directory: /vscode-extension
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "ci(vscode)"
+    labels:
+      - "dependencies"
+      - "vscode-extension"

@@ -1,0 +1,84 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "selvo"
+dynamic = ["version"]
+description = "Linux dependency blast-radius ranker — surfaces highest-value CVE patch opportunities"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Elastic-2.0" }
+dependencies = [
+    "typer[all]>=0.12",
+    "httpx[http2]>=0.27",
+    "networkx>=3.3",
+    "rich>=13.7",
+    "packaging>=24.0",
+    "anyio>=4.4",
+    "mcp[cli]>=1.0",
+    "pyyaml>=6.0",
+    "margin>=0.9",
+]
+
+[project.urls]
+Homepage = "https://selvo.dev"
+Repository = "https://github.com/Cope-Labs/selvo"
+"Bug Tracker" = "https://github.com/Cope-Labs/selvo/issues"
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sentry-sdk>=2.0",
+]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+selvo     = "selvo.cli:app"
+selvo-mcp = "selvo.mcp_server:main"
+selvo-api = "selvo.api.server:main"
+
+[tool.hatch.version]
+source = "vcs"
+fallback-version = "1.0.0"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "selvo/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["selvo"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+ignore = ["E402"]  # module-level imports after try/except guards are intentional
+
+[tool.ruff.lint.per-file-ignores]
+"selvo/api/server.py" = ["F401"]  # re-imports inside create_app() used by inner closures
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+disallow_untyped_defs = false
+# Disable codes that require deep annotation refactor on a pre-1.0 project.
+disable_error_code = [
+    "no-any-return",
+    "arg-type",
+    "assignment",
+    "has-type",
+    "call-arg",
+    "valid-type",
+    "return-value",
+    "misc",
+    "dict-item",
+    "attr-defined",
+    "unused-ignore",
+]

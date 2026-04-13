@@ -1,0 +1,20 @@
+# Caddyfile.example — copy to ./Caddyfile and replace 'selvo.example.com'
+# with your real domain.
+#
+# Caddy will automatically obtain + renew a Let's Encrypt cert on first
+# request. Your DNS A (and optionally AAAA) records must point at this
+# host before the first cert request.
+#
+# If you put Cloudflare in front in proxy ('orange cloud') mode, set
+# Cloudflare's SSL/TLS encryption mode to "Full (strict)" — Caddy serves
+# a real public cert that CF will validate. "Flexible" sends API keys
+# in plaintext and is unsafe.
+
+selvo.example.com {
+    reverse_proxy selvo:8765
+}
+
+# Optional: redirect www to apex
+www.selvo.example.com {
+    redir https://selvo.example.com{uri} permanent
+}

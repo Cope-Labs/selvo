@@ -1,0 +1,88 @@
+{
+  "_comment": "Maps security signals to compliance framework controls. Keys are CWE IDs, special risk tags, or '*' wildcards.",
+  "_version": "1.0",
+  "_frameworks": ["NIST 800-53 Rev 5", "FedRAMP High", "SOC 2 Type II", "PCI-DSS v4.0", "DoD IL4"],
+
+  "CWE-20":  {"nist": ["SI-10"],            "fedramp": ["SI-10"],                  "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10"]},
+  "CWE-22":  {"nist": ["AC-3", "AC-6"],    "fedramp": ["AC-3", "AC-6"],           "soc2": ["CC6.1", "CC6.3"],  "pci": ["6.2.4"],            "dod": ["AC-3", "AC-6"]},
+  "CWE-77":  {"nist": ["SI-10"],            "fedramp": ["SI-10"],                  "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10", "CM-7"]},
+  "CWE-78":  {"nist": ["SI-10", "AC-3"],   "fedramp": ["SI-10", "AC-3"],          "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10", "AC-3", "CM-7"]},
+  "CWE-79":  {"nist": ["SI-10"],            "fedramp": ["SI-10"],                  "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10"]},
+  "CWE-89":  {"nist": ["SI-10", "AC-3"],   "fedramp": ["SI-10", "AC-3"],          "soc2": ["CC6.1"],           "pci": ["6.2.4", "6.3.2"],   "dod": ["SI-10", "AC-3"]},
+  "CWE-94":  {"nist": ["SI-10", "AC-3"],   "fedramp": ["SI-10", "AC-3"],          "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10", "AC-3", "CM-7"]},
+  "CWE-119": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],           "pci": ["6.2.4"],            "dod": ["SI-16"]},
+  "CWE-120": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],           "pci": ["6.2.4"],            "dod": ["SI-16"]},
+  "CWE-125": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],                                        "dod": ["SI-16"]},
+  "CWE-190": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],                                        "dod": ["SI-16"]},
+  "CWE-200": {"nist": ["AC-3", "SC-28"],   "fedramp": ["AC-3", "SC-28"],          "soc2": ["CC6.1", "CC6.7"],  "pci": ["3.5.1"],            "dod": ["AC-3", "SC-28"]},
+  "CWE-209": {"nist": ["SI-11"],            "fedramp": ["SI-11"],                  "soc2": ["CC2.1"],                                        "dod": ["SI-11"]},
+  "CWE-269": {"nist": ["AC-6"],             "fedramp": ["AC-6"],                   "soc2": ["CC6.3"],           "pci": ["7.2.2"],            "dod": ["AC-6"]},
+  "CWE-284": {"nist": ["AC-3", "AC-6"],    "fedramp": ["AC-3", "AC-6"],           "soc2": ["CC6.1", "CC6.3"],  "pci": ["7.2.2"],            "dod": ["AC-3", "AC-6"]},
+  "CWE-285": {"nist": ["AC-3"],             "fedramp": ["AC-3"],                   "soc2": ["CC6.1"],           "pci": ["7.2.2"],            "dod": ["AC-3"]},
+  "CWE-287": {"nist": ["IA-2", "IA-5"],    "fedramp": ["IA-2", "IA-5"],           "soc2": ["CC6.1", "CC6.2"],  "pci": ["8.2.1"],            "dod": ["IA-2", "IA-5"]},
+  "CWE-295": {"nist": ["SC-17", "SC-23"],  "fedramp": ["SC-17", "SC-23"],         "soc2": ["CC6.7"],           "pci": ["4.2.1"],            "dod": ["SC-17", "SC-23"]},
+  "CWE-326": {"nist": ["SC-13"],            "fedramp": ["SC-13"],                  "soc2": ["CC6.7"],           "pci": ["4.2.1"],            "dod": ["SC-13"]},
+  "CWE-327": {"nist": ["SC-13"],            "fedramp": ["SC-13"],                  "soc2": ["CC6.7"],           "pci": ["4.2.1"],            "dod": ["SC-13"]},
+  "CWE-330": {"nist": ["SC-13"],            "fedramp": ["SC-13"],                  "soc2": ["CC6.7"],                                        "dod": ["SC-13"]},
+  "CWE-345": {"nist": ["SI-7"],             "fedramp": ["SI-7"],                   "soc2": ["CC7.1"],           "pci": ["6.3.2"],            "dod": ["SI-7", "SA-12"]},
+  "CWE-352": {"nist": ["SC-8", "AC-3"],    "fedramp": ["SC-8", "AC-3"],           "soc2": ["CC6.1"],                                        "dod": ["SC-8", "AC-3"]},
+  "CWE-362": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],                                        "dod": ["SI-16"]},
+  "CWE-400": {"nist": ["SC-5"],             "fedramp": ["SC-5"],                   "soc2": ["A1.2"],                                         "dod": ["SC-5"]},
+  "CWE-416": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],           "pci": ["6.2.4"],            "dod": ["SI-16"]},
+  "CWE-476": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],                                        "dod": ["SI-16"]},
+  "CWE-502": {"nist": ["SI-10"],            "fedramp": ["SI-10"],                  "soc2": ["CC6.1"],           "pci": ["6.2.4"],            "dod": ["SI-10", "CM-7"]},
+  "CWE-601": {"nist": ["SC-7"],             "fedramp": ["SC-7"],                   "soc2": ["CC6.7"],                                        "dod": ["SC-7"]},
+  "CWE-611": {"nist": ["SI-10"],            "fedramp": ["SI-10"],                  "soc2": ["CC6.1"],                                        "dod": ["SI-10"]},
+  "CWE-787": {"nist": ["SI-16"],            "fedramp": ["SI-16"],                  "soc2": ["CC7.1"],           "pci": ["6.2.4"],            "dod": ["SI-16"]},
+  "CWE-798": {"nist": ["IA-5", "AC-3"],    "fedramp": ["IA-5", "AC-3"],           "soc2": ["CC6.1"],           "pci": ["8.6.1"],            "dod": ["IA-5", "AC-3"]},
+  "CWE-918": {"nist": ["SC-7", "AC-4"],    "fedramp": ["SC-7", "AC-4"],           "soc2": ["CC6.7"],           "pci": ["6.2.4"],            "dod": ["SC-7", "AC-4"]},
+
+  "kev_listed": {
+    "nist":     ["SI-5", "RA-5", "SI-2"],
+    "fedramp":  ["RA-5(2)", "SI-5"],
+    "soc2":     ["CC7.4"],
+    "pci":      ["6.3.3"],
+    "dod":      ["CM-7", "RA-5"]
+  },
+  "weaponized_exploit": {
+    "nist":     ["SI-5", "RA-5", "IR-4"],
+    "fedramp":  ["RA-5(2)", "IR-4"],
+    "soc2":     ["CC7.3", "CC7.4"],
+    "pci":      ["6.3.3", "12.10.1"]
+  },
+  "poc_exploit": {
+    "nist":     ["RA-5", "SI-5"],
+    "soc2":     ["CC7.1"],
+    "pci":      ["6.3.3"]
+  },
+  "sla_breach": {
+    "nist":     ["RA-5", "SI-2"],
+    "fedramp":  ["RA-5", "SI-2"],
+    "soc2":     ["CC7.4"],
+    "pci":      ["6.3.3"]
+  },
+  "network_exposure": {
+    "nist":     ["SC-7", "AC-17"],
+    "fedramp":  ["SC-7(5)"],
+    "soc2":     ["CC6.7"],
+    "pci":      ["1.3.2"]
+  },
+  "supply_chain": {
+    "nist":     ["SR-3", "SR-4", "SA-12"],
+    "fedramp":  ["SR-3", "SA-12"],
+    "soc2":     ["CC9.2"],
+    "pci":      ["6.3.2"]
+  },
+  "dep_confusion": {
+    "nist":     ["SR-3", "SA-12", "CM-7"],
+    "fedramp":  ["SR-3"],
+    "soc2":     ["CC9.2"],
+    "pci":      ["6.3.2"]
+  },
+  "outdated_component": {
+    "nist":     ["SI-2", "RA-5"],
+    "fedramp":  ["SI-2"],
+    "soc2":     ["CC7.1"],
+    "pci":      ["6.3.3"]
+  }
+}

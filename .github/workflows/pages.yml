@@ -1,0 +1,92 @@
+name: Publish Risk Report to GitHub Pages
+
+on:
+  schedule:
+    # Run daily at 02:00 UTC
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "selvo/**"
+      - "scripts/**"
+      - ".github/workflows/pages.yml"
+
+# No pages/id-token permissions needed — we push to an external public repo.
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false  # deploy must never be cancelled mid-flight
+
+jobs:
+  build:
+    name: Generate report
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install selvo
+        run: pip install -e .
+
+      - name: Create output directory
+        run: mkdir -p _site
+
+      # Run the full analysis pipeline ONCE and save as JSON.
+      # Subsequent format conversions read this file — no extra API calls.
+      - name: Run analysis (→ JSON)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NVD_API_KEY:  ${{ secrets.NVD_API_KEY }}
+        run: |
+          selvo analyze \
+            --ecosystem all \
+            --limit 50 \
+            --context reference \
+            --output json \
+            --file _site/data.json
+
+      # Convert the single JSON result to HTML and SBOM locally — no API calls
+      - name: Convert JSON → HTML
+        run: python scripts/convert.py html _site/data.json _site/index.html
+
+      - name: Convert JSON → CycloneDX SBOM
+        run: python scripts/convert.py sbom _site/data.json _site/report.sbom.json
+
+      - name: Deploy to public Pages repo
+        env:
+          # PAT with `repo` scope stored in this repo's secrets.
+          # Target must be a public repo with GitHub Pages enabled on `gh-pages` branch.
+          PAGES_DEPLOY_TOKEN: ${{ secrets.PAGES_DEPLOY_TOKEN }}
+          PAGES_REPO: ${{ secrets.PAGES_REPO }}  # e.g. "my-org/selvo-report"
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Clone only the gh-pages branch (shallow) of the public target repo.
+          git clone --depth 1 --branch gh-pages \
+            "https://x-access-token:${PAGES_DEPLOY_TOKEN}@github.com/${PAGES_REPO}.git" \
+            _pages_out 2>/dev/null \
+            || git clone --depth 1 \
+               "https://x-access-token:${PAGES_DEPLOY_TOKEN}@github.com/${PAGES_REPO}.git" \
+               _pages_out
+
+          # Replace content with the freshly built site.
+          rsync -a --delete --exclude='.git' _site/ _pages_out/
+
+          cd _pages_out
+          git checkout --orphan gh-pages 2>/dev/null || true
+          git add -A
+          git diff --cached --quiet && echo "No changes to deploy." && exit 0
+          git commit -m "deploy: selvo report $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          git push origin gh-pages --force

@@ -1,0 +1,50 @@
+# selvo.policy.yml — Policy-as-code for selvo risk gates
+# Place this file in the root of your repository.
+# selvo test / selvo policy check will auto-discover it.
+#
+# Docs: https://github.com/Cope-Labs/selvo-report#policy-as-code
+version: 1
+
+# ── SLA thresholds (days to remediate after CVE disclosure) ──────────────────
+sla:
+  critical: 7      # CVSS ≥ 9.0 or CISA KEV
+  high: 30         # CVSS 7.0–8.9
+  medium: 90       # CVSS 4.0–6.9
+  low: 365         # CVSS < 4.0
+
+# ── Allow-list: suppress specific CVEs from block/warn ──────────────────────
+# Add entries here when a CVE is not applicable to your deployment.
+# Entries auto-expire on the 'expires' date — leaving them in indefinitely
+# is an audit finding.
+allow:
+  cves:
+    # - id: CVE-2023-XXXXX
+    #   reason: "Affected code path not reachable in our configuration"
+    #   expires: 2025-12-31
+
+# ── Block gates: these cause 'selvo test' to exit 1 ─────────────────────────
+block:
+  on_kev: true              # Fail if any package has a CISA KEV-listed CVE
+  on_weaponized: true       # Fail if any package has a weaponized exploit
+  min_cvss: 9.0             # Fail if any CVE CVSS score >= this threshold
+  min_score: 0.0            # Fail if any composite risk score >= this (0 = disabled)
+  min_epss: 0.0             # Fail if any CVE EPSS >= this (0 = disabled)
+  # cwe_classes:            # Future: block on specific CWE classes
+  #   - CWE-787             #   (Out-of-bounds Write)
+  #   - CWE-89              #   (SQL Injection)
+
+# ── Warn gates: informational — exit 2, not 1 ────────────────────────────────
+warn:
+  on_poc: true              # Warn when a PoC exploit exists
+  min_cvss: 7.0             # Warn on high-severity CVEs (below block.min_cvss)
+  min_epss: 0.0             # Warn on high-EPSS CVEs (0 = disabled)
+
+# ── Notifications ─────────────────────────────────────────────────────────────
+# Native connectors for Slack (Block Kit) and PagerDuty (Events v2).
+# Set these to enable push alerts from 'selvo watch'.
+notifications:
+  # Slack incoming webhook — will send rich Block Kit messages
+  # slack: "https://hooks.slack.com/services/T.../B.../..."
+
+  # PagerDuty Events v2 integration routing key
+  # pagerduty_routing_key: "your_routing_key_here"

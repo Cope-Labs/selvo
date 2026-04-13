@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "selvo: analyze (all ecosystems)",
+			"type": "shell",
+			"command": ".venv/bin/selvo analyze --ecosystem all --limit 50",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

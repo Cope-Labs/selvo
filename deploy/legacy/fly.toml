@@ -1,0 +1,38 @@
+# fly.toml — selvo API deployment on fly.io
+# Deploy with: fly deploy
+# First time: fly launch --no-deploy (then fly deploy)
+
+app = "selvo"
+primary_region = "iad"  # US East — change to closest region
+
+[build]
+  dockerfile = "../Dockerfile"
+
+[env]
+  PORT = "8765"
+  SELVO_API_AUTH = "1"
+  # Non-secret env vars go here.
+  # Secrets (STRIPE_SECRET_KEY, SELVO_API_SECRET, etc.) are set via:
+  #   fly secrets set KEY=value ...
+
+[http_service]
+  internal_port = 8765
+  force_https = true
+  auto_stop_machines = true   # scale to zero when idle (free tier friendly)
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[mounts]]
+  source      = "selvo_data"    # fly volumes create selvo_data --size 1 --region iad
+  destination = "/root/.cache/selvo"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+  swap_size_mb = 512

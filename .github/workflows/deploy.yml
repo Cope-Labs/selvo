@@ -1,0 +1,55 @@
+name: Deploy to Hetzner
+
+on:
+  # Run after Docker GHCR build succeeds on main.
+  workflow_run:
+    workflows: ["Docker — Build & Push to GHCR"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Pull + restart on hetzner2
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+
+    steps:
+      - name: Install SSH key
+        env:
+          KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          HOST: ${{ secrets.HETZNER_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Trigger pull + recreate
+        env:
+          USER: ${{ secrets.HETZNER_USER }}
+          HOST: ${{ secrets.HETZNER_HOST }}
+        # The key is restricted in authorized_keys to a fixed
+        # `cd /home/deploy/selvo && sudo docker compose pull && sudo docker compose up -d`
+        # command, so any value passed to ssh is ignored.
+        run: |
+          ssh -i ~/.ssh/id_deploy -o BatchMode=yes "$USER@$HOST" deploy 2>&1 | tee deploy.log
+          if grep -qi "error" deploy.log; then exit 1; fi
+
+      - name: Verify endpoint
+        run: |
+          for i in 1 2 3 4 5 6; do
+            sleep 5
+            CODE=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 10 https://selvo.dev/api/v1/status || echo "000")
+            echo "attempt $i: HTTP $CODE"
+            if [ "$CODE" = "200" ]; then exit 0; fi
+          done
+          echo "selvo.dev did not return 200 after deploy"
+          exit 1

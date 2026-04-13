@@ -1,0 +1,37 @@
+# Caddyfile — selvo API reverse proxy
+#
+# Set SELVO_API_DOMAIN to your public domain in .env / docker-compose.yml.
+# Caddy will automatically obtain and renew a TLS certificate via Let's Encrypt.
+#
+# For local development leave SELVO_API_DOMAIN unset; Caddy will serve on
+# http://localhost with a self-signed certificate.
+
+{
+    # Disable the Caddy admin API from being accessible outside the container.
+    admin off
+    # Use the ACME staging server during development to avoid rate limits.
+    # Remove or comment out for production.
+    # acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+{$SELVO_API_DOMAIN:localhost} {
+    # Compress responses
+    encode zstd gzip
+
+    # Security headers
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+
+    # Proxy all traffic to the selvo-api container
+    reverse_proxy selvo-api:8765 {
+        # Pass the real client IP to selvo-api logs
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+}

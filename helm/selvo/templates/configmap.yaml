@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "selvo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "selvo.labels" . | nindent 4 }}
+data:
+  SELVO_API_AUTH: {{ .Values.selvo.apiAuth | quote }}
+  SELVO_DASH_ORG: {{ .Values.selvo.dashOrg | quote }}
+  SELVO_PORT: {{ include "selvo.port" . | quote }}
+  {{- with .Values.extraEnv }}
+  {{- range . }}
+  {{ .name }}: {{ .value | quote }}
+  {{- end }}
+  {{- end }}

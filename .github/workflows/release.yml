@@ -1,0 +1,73 @@
+name: Release to PyPI
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+# PyPI publishing removed — selvo CLI is now published from Cope-Labs/selvo-cli.
+# This repo's source must not leak to PyPI.
+
+jobs:
+
+  vscode-extension:
+    name: Build & publish VS Code extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: vscode-extension
+        run: npm install
+
+      - name: Compile TypeScript
+        working-directory: vscode-extension
+        run: npx tsc --noEmit  # type-check only; build via vsce
+
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+
+      - name: Package VSIX
+        working-directory: vscode-extension
+        run: vsce package --no-dependencies --out selvo-security.vsix
+
+      - name: Upload VSIX artifact
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        with:
+          name: selvo-security-vsix
+          path: vscode-extension/selvo-security.vsix
+
+      - name: Publish to VS Code Marketplace
+        if: ${{ vars.VSCE_PUBLISH == 'true' }}
+        working-directory: vscode-extension
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "VSCE_PAT not set, skipping VS Code Marketplace publish."
+            exit 0
+          fi
+          vsce publish --no-dependencies --pat "$VSCE_PAT"
+
+      - name: Publish to Open VSX Registry
+        working-directory: vscode-extension
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          if [ -z "$OVSX_PAT" ]; then
+            echo "OVSX_PAT not set, skipping Open VSX publish."
+            exit 0
+          fi
+          npm install -g ovsx
+          ovsx create-namespace selvo-security --pat "$OVSX_PAT" || true
+          ovsx publish selvo-security.vsix --pat "$OVSX_PAT"

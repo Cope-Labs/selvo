@@ -1,0 +1,131 @@
+{
+  "name": "selvo-security",
+  "displayName": "selvo Security",
+  "description": "Inline CVE annotations, EPSS scores, KEV badges, and selvo fix for Linux package files, lock files, and manifests.",
+  "version": "0.1.1",
+  "publisher": "selvo-security",
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "security",
+    "cve",
+    "dependencies",
+    "linux",
+    "selvo",
+    "sbom",
+    "epss",
+    "kev"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sethc5/selvo"
+  },
+  "license": "Elastic-2.0",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "selvo.scan",
+        "title": "selvo: Scan Current File"
+      },
+      {
+        "command": "selvo.scanWorkspace",
+        "title": "selvo: Scan Workspace"
+      },
+      {
+        "command": "selvo.fix",
+        "title": "selvo: Fix Package (open upstream PR)"
+      },
+      {
+        "command": "selvo.clearCache",
+        "title": "selvo: Clear Cached Results"
+      },
+      {
+        "command": "selvo.openDashboard",
+        "title": "selvo: Open Web Dashboard"
+      },
+      {
+        "command": "selvo.setApiKey",
+        "title": "selvo: Set API Key (saved to Secret Storage)"
+      }
+    ],
+    "configuration": {
+      "title": "selvo Security",
+      "properties": {
+        "selvo.path": {
+          "type": "string",
+          "default": "selvo",
+          "description": "Path to the selvo executable."
+        },
+        "selvo.autoScan": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically scan supported files on open/save."
+        },
+        "selvo.minCvssDecorate": {
+          "type": "number",
+          "default": 4.0,
+          "description": "Minimum CVSS score to show inline decoration (0 = show all)."
+        },
+        "selvo.showEpss": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show EPSS exploitation probability in hover cards."
+        },
+        "selvo.apiUrl": {
+          "type": "string",
+          "default": "",
+          "description": "selvo SaaS API URL (optional). If set, uses remote scan instead of local CLI."
+        },
+        "selvo.apiKey": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "**Deprecated** — use the `selvo: Set API Key` command instead. API keys set here are stored in plaintext settings.json.",
+          "deprecationMessage": "Use the 'selvo: Set API Key' command to store the key securely in VS Code Secret Storage."
+        },
+        "selvo.policy": {
+          "type": "string",
+          "default": "",
+          "description": "Path to selvo.policy.yml (auto-discovered if empty)."
+        },
+        "selvo.ecosystem": {
+          "type": "string",
+          "default": "all",
+          "enum": ["debian", "ubuntu", "fedora", "arch", "alpine", "nixos", "winget", "homebrew", "chocolatey", "all"],
+          "description": "Default ecosystem for workspace scans."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "requirements",
+        "filenames": ["requirements.txt", "requirements-dev.txt", "requirements-test.txt"],
+        "extensions": [".txt"]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.87.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}

@@ -1,0 +1,61 @@
+version: "3.9"
+
+# selvo SaaS deployment
+#
+# Quick start:
+#   cp .env.example .env          # fill in secrets
+#   docker compose up -d
+#
+# The API will be available at https://<SELVO_API_DOMAIN> via Caddy (auto TLS).
+# The Stripe webhook endpoint is  POST /api/v1/billing/webhook
+
+services:
+  selvo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      # Enable API-key authentication (set to empty string to disable)
+      SELVO_API_AUTH: "1"
+      # A long random string used to generate HMAC hints in logs.
+      # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+      SELVO_API_SECRET: "${SELVO_API_SECRET}"
+      # Stripe billing (leave blank to disable billing webhook)
+      STRIPE_WEBHOOK_SECRET: "${STRIPE_WEBHOOK_SECRET:-}"
+      STRIPE_SECRET_KEY: "${STRIPE_SECRET_KEY:-}"
+      # Required for v2 (thin-event) webhook signature verification (whe_…)
+      STRIPE_WEBHOOK_ENDPOINT_ID: "${STRIPE_WEBHOOK_ENDPOINT_ID:-}"
+      # Optional Stripe price-to-plan mapping (JSON)
+      STRIPE_PRICE_MAP: "${STRIPE_PRICE_MAP:-}"
+      # Optional: GitHub token for higher rate limits in scorecard / upstream
+      GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+    volumes:
+      - selvo-cache:/root/.cache/selvo
+    expose:
+      - "8765"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8765/api/v1/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on: []
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"   # HTTP/3
+    volumes:
+      - ./deploy/legacy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - selvo-api
+
+volumes:
+  selvo-cache:
+  caddy-data:
+  caddy-config:
