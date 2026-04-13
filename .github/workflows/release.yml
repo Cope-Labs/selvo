@@ -1,4 +1,4 @@
-name: Release to PyPI
+name: Release
 
 on:
   push:
@@ -8,10 +8,53 @@ on:
 permissions:
   contents: read
 
-# PyPI publishing removed — selvo CLI is now published from Cope-Labs/selvo-cli.
-# This repo's source must not leak to PyPI.
+# On every v* tag:
+#   * Build the selvo sdist + wheel (hatch-vcs reads the tag for version)
+#   * Publish to PyPI via trusted publishing (OIDC — no long-lived token).
+#   * Build + publish the VS Code extension (existing job).
+#
+# Prerequisite (one-time, PyPI UI):
+#   https://pypi.org/manage/project/selvo/settings/publishing/
+#   → Add publisher → GitHub
+#     owner:            Cope-Labs
+#     repository:       selvo
+#     workflow_name:    release.yml
+#     environment:      pypi
+# The `environment: pypi` bind below must match what you enter there.
 
 jobs:
+
+  pypi:
+    name: Publish selvo to PyPI (OIDC)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: pypi
+      url: https://pypi.org/project/selvo/
+    permissions:
+      contents: read
+      id-token: write   # required by pypa/gh-action-pypi-publish for OIDC
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0  # tags for hatch-vcs
+
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.12"
+
+      - name: Build sdist + wheel
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build
+
+      - name: Basic sanity-check
+        run: |
+          python -m pip install --upgrade twine
+          twine check dist/*
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # v1.12.4
 
   vscode-extension:
     name: Build & publish VS Code extension
