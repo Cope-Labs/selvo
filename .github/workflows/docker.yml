@@ -101,6 +101,14 @@ jobs:
       #            meaning provenance is tied to the GitHub Actions identity
       #            rather than a shared signing key we'd have to rotate.
 
+      # Multi-arch buildx pushes to the registry but does not load the image
+      # into the local Docker daemon — so Trivy (which inspects via the local
+      # daemon by default) can't find it. Pull it explicitly; the login step
+      # above already provided registry credentials.
+      - name: Pull image for local scanning
+        if: github.event_name != 'pull_request'
+        run: docker pull "${{ env.REGISTRY }}/${{ steps.img.outputs.name }}@${{ steps.build.outputs.digest }}"
+
       # Two-pass Trivy: first pass always produces a complete SARIF (exit-code=0)
       # so the upload step sees a well-formed file; a second conditional pass
       # can be added later if we want to hard-fail on CRITICAL.
