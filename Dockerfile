@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 LABEL org.opencontainers.image.title="selvo-api" \
       org.opencontainers.image.description="selvo Linux dependency risk analysis REST API" \
