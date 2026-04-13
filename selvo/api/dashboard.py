@@ -831,11 +831,11 @@ def render_overview(packages: list[dict], taken_at: float | None, org_id: str = 
 
     # Sub-line adapts to state: empty/intact gets a confident "nothing today",
     # degraded/ablated gets a concrete action pulled from the top package.
-    top_package = actionable[0] if actionable else None
     if system_health == "INTACT" or not actionable:
         sub_line = f"<strong>{total:,}</strong> packages tracked. Nothing needs attention today."
         primary_cta = '<a href="/dash/packages" class="btn btn-outline-secondary">View all packages →</a>'
     else:
+        top_package = actionable[0]
         name = _esc(top_package.get("name", "?"))
         cves_here = top_package.get("cve_count", 0)
         kev_note = " including a KEV-listed one" if top_package.get("in_cisa_kev") else ""
