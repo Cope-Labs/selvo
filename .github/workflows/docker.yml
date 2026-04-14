@@ -138,6 +138,10 @@ jobs:
           output-file: sbom.cdx.json
           upload-artifact: true
           upload-artifact-retention: 90
+          # Don't try to attach SBOM to the GitHub Release (would need
+          # contents: write, which we deliberately don't grant). The SBOM
+          # is attested to the image via cosign below — that's canonical.
+          upload-release-assets: false
 
       - name: Install cosign
         if: github.event_name != 'pull_request'
