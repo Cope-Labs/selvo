@@ -102,7 +102,13 @@ jobs:
           fi
           vsce publish --no-dependencies --pat "$VSCE_PAT"
 
+      # Gated like the VS Code Marketplace publish: requires both the secret
+      # AND vars.OVSX_PUBLISH == 'true'. Open VSX rejects publishes to
+      # unverified namespaces with "NAMESPACE IS NOT VERIFIED" — flip the
+      # var only after the namespace is approved at
+      # https://github.com/EclipseFdn/open-vsx.org/issues
       - name: Publish to Open VSX Registry
+        if: ${{ vars.OVSX_PUBLISH == 'true' }}
         working-directory: vscode-extension
         env:
           OVSX_PAT: ${{ secrets.OVSX_PAT }}
