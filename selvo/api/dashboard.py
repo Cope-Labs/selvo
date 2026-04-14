@@ -288,9 +288,12 @@ _LANDING = """\
 <meta property="og:url" content="https://selvo.dev/">
 <meta property="og:title" content="selvo — Linux Dependency Risk Scanner">
 <meta property="og:description" content="Know what's actually dangerous on your Linux servers. Prioritized CVE scanning with distro backport filtering, blast radius scoring, and exploit intelligence.">
+<meta property="og:site_name" content="selvo">
+<meta property="og:image" content="https://copelabs.dev/og.png">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="selvo — Linux Dependency Risk Scanner">
 <meta name="twitter:description" content="Scan Linux packages, rank by blast radius and exploit probability, filter what your distro already patched. Free tier available.">
+<meta name="twitter:image" content="https://copelabs.dev/og.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x26A1;</text></svg>">
 <style>
 :root{--bg:#0d1117;--bg2:#161b22;--bg3:#21262d;--border:#30363d;

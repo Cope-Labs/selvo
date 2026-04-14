@@ -727,6 +727,34 @@ def create_app() -> "FastAPI":
             media_type="application/xml",
         )
 
+    @app.get("/llms.txt", include_in_schema=False)
+    async def llms_txt():
+        from starlette.responses import Response
+        content = (
+            "# selvo\n\n"
+            "> Linux dependency risk scanner. Ranks CVEs by blast radius and exploit probability. "
+            "Filters what your distro already patched.\n\n"
+            "selvo scans installed Linux packages across 16 ecosystems, checks 8 data sources (NVD, EPSS, "
+            "CISA KEV, GitHub Advisory, OSV, Exploit-DB, and distro trackers), filters out backported fixes, "
+            "and ranks findings by blast radius and exploit probability. Exports SARIF, VEX, OSCAL, NIST.\n\n"
+            "## Plans\n\n"
+            "- Free: 5 requests/day\n"
+            "- Pro: $49/mo, 10,000 requests/day\n"
+            "- Enterprise: $299/mo, 1,000,000 requests/day\n\n"
+            "## Install\n\n"
+            "- pip install selvo\n"
+            "- docker pull ghcr.io/cope-labs/selvo\n"
+            "- GitHub Action: Cope-Labs/selvo-action@v1\n\n"
+            "## Key pages\n\n"
+            "- https://selvo.dev/: Landing, pricing, docs\n"
+            "- https://selvo.dev/dash/: Scan dashboard\n"
+            "- https://selvo.dev/api/v1/status: API status\n\n"
+            "## Source\n\n"
+            "- GitHub: https://github.com/Cope-Labs/selvo\n"
+            "- Parent: https://copelabs.dev (Cope Labs LLC)\n"
+        )
+        return Response(content=content, media_type="text/plain")
+
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
         from starlette.responses import Response
