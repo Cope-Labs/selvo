@@ -377,6 +377,8 @@ a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
 .foot{text-align:center;padding:3rem 2rem 2rem;color:var(--muted);font-size:.8rem;
   border-top:1px solid var(--border);max-width:1200px;margin:3rem auto 0}
 </style>
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "aec73c1de6f74d079a60a47964faa712"}'></script>
 </head>
 <body>
 
