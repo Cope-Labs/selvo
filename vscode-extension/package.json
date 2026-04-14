@@ -2,7 +2,7 @@
   "name": "selvo-security",
   "displayName": "selvo Security",
   "description": "Inline CVE annotations, EPSS scores, KEV badges, and selvo fix for Linux package files, lock files, and manifests.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "selvo-security",
   "engines": {
     "vscode": "^1.87.0"
