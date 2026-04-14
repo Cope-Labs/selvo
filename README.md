@@ -2,10 +2,12 @@
 
 **Know what's actually dangerous on your Linux servers.**
 
-[![Live Report](https://github.com/Cope-Labs/selvo/actions/workflows/pages.yml/badge.svg)](https://copelabs.dev/selvo-report/)
-[![Status](https://img.shields.io/badge/status-selvo.dev-blue)](https://selvo.dev)
+[![PyPI](https://img.shields.io/pypi/v/selvo?label=PyPI)](https://pypi.org/project/selvo/)
+[![Container](https://img.shields.io/badge/ghcr.io-cope--labs%2Fselvo-2496ED?logo=docker)](https://github.com/Cope-Labs/selvo/pkgs/container/selvo)
+[![GitHub Action](https://img.shields.io/badge/Marketplace-selvo--security--scan-181717?logo=github)](https://github.com/marketplace/actions/selvo-security-scan)
 [![License: ELv2](https://img.shields.io/badge/License-ELv2-orange.svg)](LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/selvo)](https://pypi.org/project/selvo/)
+[![CodeQL](https://github.com/Cope-Labs/selvo/actions/workflows/codeql.yml/badge.svg)](https://github.com/Cope-Labs/selvo/actions/workflows/codeql.yml)
+[![Live Report](https://github.com/Cope-Labs/selvo/actions/workflows/pages.yml/badge.svg)](https://copelabs.dev/selvo-report/)
 
 selvo scans your installed packages, checks every CVE against 8 data sources, filters out what your distro already patched, and ranks the rest by blast radius and exploit probability. Not just a list --- a prioritized action plan.
 
