@@ -25,7 +25,7 @@
     "type": "git",
     "url": "https://github.com/Cope-Labs/selvo"
   },
-  "license": "Elastic-2.0",
+  "license": "MIT",
   "icon": "icon.png",
   "galleryBanner": {
     "color": "#0d1b2a",

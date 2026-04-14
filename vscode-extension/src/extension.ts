@@ -1,5 +1,5 @@
-// Copyright (c) 2026 Seth Holloway. All rights reserved.
-// SPDX-License-Identifier: Elastic-2.0
+// Copyright (c) 2026 Cope Labs LLC
+// SPDX-License-Identifier: MIT
 /**
  * selvo VS Code Extension — main entry point.
  *
