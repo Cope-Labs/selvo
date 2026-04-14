@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.cope-labs/selvo",
+  "name": "io.github.Cope-Labs/selvo",
   "title": "selvo",
   "description": "Linux CVE prioritisation: 16 MCP tools for scan, fleet, runtime, and PR-able fix discovery.",
   "version": "2.0.4",

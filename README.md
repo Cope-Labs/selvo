@@ -1,6 +1,6 @@
 # selvo
 
-<!-- mcp-name: io.github.cope-labs/selvo -->
+<!-- mcp-name: io.github.Cope-Labs/selvo -->
 
 **Know what's actually dangerous on your Linux servers.**
 
