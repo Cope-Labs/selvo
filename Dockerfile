@@ -26,9 +26,10 @@ RUN pip install --no-cache-dir build \
 
 FROM python:3.12-slim
 
-LABEL org.opencontainers.image.title="selvo-api" \
-      org.opencontainers.image.description="selvo Linux dependency risk analysis REST API" \
-      org.opencontainers.image.source="https://github.com/Cope-Labs/selvo"
+LABEL org.opencontainers.image.title="selvo" \
+      org.opencontainers.image.description="selvo — Linux dependency risk scanner (CLI + REST API)" \
+      org.opencontainers.image.source="https://github.com/Cope-Labs/selvo" \
+      org.opencontainers.image.licenses="Elastic-2.0"
 
 WORKDIR /app
 

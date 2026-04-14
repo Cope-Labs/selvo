@@ -6,6 +6,84 @@ Versions correspond to PyPI releases of the `selvo` package.
 
 ---
 
+## [2.0.3] — 2026-04-14
+
+### Fixed
+- VS Code extension: `@types/vscode` pinned back to `^1.87.0` to match
+  `engines.vscode`. Dependabot's bump to `^1.115.0` broke `vsce package`
+  with "@types/vscode greater than engines.vscode".
+- VS Code extension repository URL points at `Cope-Labs/selvo`
+  (was the old private `sethc5/selvo`).
+
+### Changed
+- Container OCI title relabeled from `selvo-api` to `selvo` — the image
+  ships the full CLI, not just the API entrypoint.
+- Bumped CI actions off Node 20 deprecation warning: `actions/cache`,
+  `anchore/sbom-action`, `github/codeql-action/upload-sarif`.
+- Stale Trivy comment in `docker.yml` updated to match the actual
+  two-pass SARIF flow (no hard-fail on CRITICAL).
+
+### Internal
+- `dependabot.yml` now ignores `@types/vscode` so the engines/types
+  mismatch can't recur on the next weekly cycle.
+
+---
+
+## [2.0.2] — 2026-04-14
+
+### Fixed
+- Container at `ghcr.io/cope-labs/selvo:2.0.2` reports `Version: 2.0.2`
+  cleanly. v2.0.1 still produced a "dirty" version
+  (`2.0.2.dev0+...d20260414`) because the builder stage didn't include
+  the full tracked tree — `hatch-vcs` saw phantom deletions.
+- `anchore/sbom-action` no longer tries to attach the SBOM as a Release
+  asset (would have required `contents: write`). The SBOM is still
+  attested to the image via cosign, which is the canonical signed
+  location.
+
+### Added
+- `.dockerignore` prunes generated/editor artifacts (caches,
+  `node_modules`, `.venv`, `*.vsix`) so the build context stays small
+  without affecting versioning.
+
+---
+
+## [2.0.1] — 2026-04-14
+
+### Fixed
+- Container shipped as 2.0.0 was reporting selvo version `1.0.0` inside
+  — the single-stage Dockerfile didn't `COPY .git` so `hatch-vcs` fell
+  back to `pyproject`'s `fallback-version`. Switched to a multi-stage
+  build: stage 1 includes `.git` and builds the wheel; stage 2 installs
+  the wheel into a clean runtime image.
+- `fallback-version` bumped to `2.0.1` as defense-in-depth so any future
+  build that loses `.git` ships at least the latest release version.
+
+---
+
+## [2.0.0] — 2026-04-13
+
+### Added
+- **Open source under Elastic License 2.0** — full source published.
+- **Public GitHub Action**: [`Cope-Labs/selvo-action@v2`](https://github.com/marketplace/actions/selvo-security-scan)
+  on the GitHub Marketplace.
+- **Thin client option**: `pip install selvo-client` for users who want
+  to call a hosted selvo SaaS without the full scanner.
+- **Self-host kit** at `deploy/selfhost/` (Docker Compose + Caddy).
+- **Supply-chain hardened CI**: CodeQL, Trivy SARIF → Code Scanning,
+  CycloneDX SBOM, cosign keyless signing, OIDC PyPI publishing.
+- **Image scan tarball parsers** for `apk` and modern RPM-sqlite DBs.
+- **Per-package acknowledge** with re-surface on new CVEs.
+- **Silent-zero alert** — warns when a Linux scan suspiciously
+  returns 0 CVEs.
+
+### Changed
+- Major version bump to mark the public release; no breaking API
+  changes vs. the private 0.1.x line, but namespace and distribution
+  channels are now public-stable.
+
+---
+
 ## [0.1.9] — 2026-03-10
 
 ### Added

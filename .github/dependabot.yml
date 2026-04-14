@@ -66,6 +66,12 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    # @types/vscode tracks the minimum VSCode version in engines.vscode, not
+    # the latest VSCode release — bumping it without raising engines.vscode
+    # breaks `vsce package` ("@types/vscode greater than engines.vscode").
+    # Pin it here and bump manually when we intentionally raise the floor.
+    ignore:
+      - dependency-name: "@types/vscode"
     commit-message:
       prefix: "ci(vscode)"
     labels:
