@@ -6,6 +6,22 @@ Versions correspond to PyPI releases of the `selvo` package.
 
 ---
 
+## [2.0.4] — 2026-04-14
+
+### Added
+- Listed in the [MCP Registry](https://registry.modelcontextprotocol.io)
+  as `io.github.cope-labs/selvo`. New `publish-mcp.yml` workflow auto-
+  publishes `server.json` after each successful Release run via OIDC —
+  no PAT needed.
+- Homebrew tap: `brew install copelabs/tap/selvo` (formula in
+  [Cope-Labs/homebrew-tap](https://github.com/Cope-Labs/homebrew-tap)).
+
+### Internal
+- README carries an `<!-- mcp-name: io.github.cope-labs/selvo -->`
+  marker for MCP Registry ownership verification.
+
+---
+
 ## [2.0.3] — 2026-04-14
 
 ### Fixed

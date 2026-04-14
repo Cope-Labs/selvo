@@ -1,0 +1,50 @@
+name: Publish to MCP Registry
+
+# Fires after a v* tag finishes propagating to PyPI. The MCP Registry verifies
+# selvo's package by reading the README from PyPI and looking for the
+# `<!-- mcp-name: io.github.cope-labs/selvo -->` marker — that has to be on
+# PyPI before the publish call lands, hence the dependency on the Release
+# workflow's PyPI job rather than the raw tag push.
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+
+jobs:
+  publish:
+    name: Publish server.json to MCP Registry (OIDC)
+    if: ${{ github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.head_branch, 'v') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      id-token: write   # OIDC for `mcp-publisher login github-oidc`
+      contents: read
+
+    steps:
+      - name: Checkout the tag that triggered the upstream Release
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Pin server.json version to the released tag
+        run: |
+          VERSION="${{ github.event.workflow_run.head_branch }}"
+          VERSION="${VERSION#v}"
+          # mcp-publisher's package version must match what's on PyPI;
+          # rewriting in-place avoids a manual bump on every release.
+          jq --arg v "$VERSION" \
+            '.version = $v | (.packages[] | select(.registryType=="pypi")).version = $v' \
+            server.json > server.tmp && mv server.tmp server.json
+
+      - name: Install mcp-publisher
+        run: |
+          curl -fL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" \
+            | tar xz mcp-publisher
+          ./mcp-publisher --help >/dev/null
+
+      - name: Authenticate via GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        run: ./mcp-publisher publish

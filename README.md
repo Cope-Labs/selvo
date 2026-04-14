@@ -1,5 +1,7 @@
 # selvo
 
+<!-- mcp-name: io.github.cope-labs/selvo -->
+
 **Know what's actually dangerous on your Linux servers.**
 
 [![PyPI](https://img.shields.io/pypi/v/selvo?label=PyPI)](https://pypi.org/project/selvo/)
