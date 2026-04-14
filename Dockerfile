@@ -14,9 +14,11 @@ WORKDIR /build
 RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md ./
-COPY selvo/ ./selvo/
-COPY .git/ ./.git/
+# Copy the full tree so hatch-vcs sees a non-dirty working tree (any tracked
+# file missing from the build context shows up as a deletion and adds the
+# .d<date> dirty suffix to the version). .dockerignore prunes out the obvious
+# dev-only directories so the build context stays small.
+COPY . ./
 
 RUN pip install --no-cache-dir build \
     && python -m build --wheel --outdir /dist
